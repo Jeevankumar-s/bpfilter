@@ -7,7 +7,6 @@
 
 #include <errno.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -22,8 +21,6 @@
 #define _BF_SET_USE_TRIE_MASK                                                  \
     (BF_FLAGS(BF_MATCHER_IP4_SNET, BF_MATCHER_IP4_DNET, BF_MATCHER_IP6_SNET,   \
               BF_MATCHER_IP6_DNET))
-
-#define _BF_SET_PORT_BUFSIZE 6
 
 static uint64_t _bf_set_elem_hash(const void *data, void *ctx)
 {
@@ -163,14 +160,8 @@ static int _bf_set_parse_key(const char *raw_key, enum bf_matcher_type *key,
 static int _bf_set_expand_range(struct bf_set *set, const char *token,
                                 const struct bf_matcher_ops *range_ops)
 {
-    const struct bf_matcher_ops *ops;
     uint16_t bounds[2];
     int r;
-
-    ops = bf_matcher_get_ops(set->key[0], BF_MATCHER_IN);
-    if (!ops)
-        return bf_err_r(-EINVAL, "matcher type '%s' has no matcher_ops",
-                        bf_matcher_type_to_str(set->key[0]));
 
     r = range_ops->parse(set->key[0], BF_MATCHER_RANGE, bounds, token);
     if (r)
@@ -178,19 +169,12 @@ static int _bf_set_expand_range(struct bf_set *set, const char *token,
 
     for (uint32_t value = bounds[0]; value <= bounds[1]; ++value) {
         _cleanup_free_ void *range_elem = NULL;
-        char value_str[_BF_SET_PORT_BUFSIZE];
 
         range_elem = malloc(set->elem_size);
         if (!range_elem)
             return bf_err_r(-ENOMEM, "failed to allocate a new set element");
 
-        (void)snprintf(value_str, sizeof(value_str), "%u", value);
-
-        r = ops->parse(set->key[0], BF_MATCHER_IN, range_elem, value_str);
-        if (r) {
-            return bf_err_r(r, "failed to parse expanded range value '%s'",
-                            value_str);
-        }
+        *(uint16_t *)range_elem = (uint16_t)value;
 
         r = bf_hashset_add(&set->elems, &range_elem);
         if (r == -EEXIST)
@@ -229,6 +213,8 @@ int bf_set_add_elem_raw(struct bf_set *set, const char *raw_elem)
     if (set->n_comps == 1 && (set->key[0] == BF_MATCHER_TCP_SPORT ||
                               set->key[0] == BF_MATCHER_TCP_DPORT ||
                               set->key[0] == BF_MATCHER_UDP_SPORT ||
+                              set->key[0] == BF_MATCHER_META_SPORT ||
+                              set->key[0] == BF_MATCHER_META_DPORT ||
                               set->key[0] == BF_MATCHER_UDP_DPORT)) {
         range_ops = bf_matcher_get_ops(set->key[0], BF_MATCHER_RANGE);
     }
