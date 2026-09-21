@@ -213,9 +213,9 @@ int bf_set_add_elem_raw(struct bf_set *set, const char *raw_elem)
     if (set->n_comps == 1 && (set->key[0] == BF_MATCHER_TCP_SPORT ||
                               set->key[0] == BF_MATCHER_TCP_DPORT ||
                               set->key[0] == BF_MATCHER_UDP_SPORT ||
+                              set->key[0] == BF_MATCHER_UDP_DPORT ||
                               set->key[0] == BF_MATCHER_META_SPORT ||
-                              set->key[0] == BF_MATCHER_META_DPORT ||
-                              set->key[0] == BF_MATCHER_UDP_DPORT)) {
+                              set->key[0] == BF_MATCHER_META_DPORT)) {
         range_ops = bf_matcher_get_ops(set->key[0], BF_MATCHER_RANGE);
     }
 
