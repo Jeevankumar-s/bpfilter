@@ -308,6 +308,16 @@ static void new_from_raw_port_range(void **state)
     assert_ok(bf_set_new_from_raw(&set, "test_range_middle", "(tcp.dport)",
                                   "{11; 27-30; 50}"));
     assert_int_equal(bf_hashset_size(&set->elems), 6);
+
+    bf_set_free(&set);
+
+    // UDP source port range
+    assert_ok(bf_set_new_from_raw(&set, "test_udp_range", "(udp.sport)",
+                                  "{1000; 2000-2002}"));
+    assert_non_null(set);
+    assert_int_equal(set->n_comps, 1);
+    assert_int_equal(set->key[0], BF_MATCHER_UDP_SPORT);
+    assert_int_equal(bf_hashset_size(&set->elems), 4);
 }
 
 static void new_from_raw_port_range_boundaries(void **state)

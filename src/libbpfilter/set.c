@@ -163,6 +163,10 @@ static int _bf_set_expand_range(struct bf_set *set, const char *token,
     uint16_t bounds[2];
     int r;
 
+    assert(set);
+    assert(token);
+    assert(range_ops);
+
     r = range_ops->parse(set->key[0], BF_MATCHER_RANGE, bounds, token);
     if (r)
         return bf_err_r(r, "failed to parse set element range '%s'", token);
@@ -242,7 +246,8 @@ int bf_set_add_elem_raw(struct bf_set *set, const char *raw_elem)
             if (strchr(raw_elem, ',')) {
                 return bf_err_r(
                     -EINVAL,
-                    "set element has more components than defined in the key");
+                    "set element has more components than defined in the key: '%s'",
+                    token);
             }
             return _bf_set_expand_range(set, token, range_ops);
         }

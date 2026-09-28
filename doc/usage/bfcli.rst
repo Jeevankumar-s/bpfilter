@@ -520,7 +520,7 @@ Here is an example:
         ACCEPT
 
 Port ranges
-~~~~~~~~~~~
+###########
 
 Sets with a single port component (``tcp.sport``, ``tcp.dport``, ``udp.sport``, ``udp.dport``, ``meta.sport`` or ``meta.dport``) support inclusive ranges written as ``START-END``. Both bounds must be between 0 and 65535, and the start must not exceed the end.
 
