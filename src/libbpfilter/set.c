@@ -172,18 +172,16 @@ static int _bf_set_expand_range(struct bf_set *set, const char *token,
         return bf_err_r(r, "failed to parse set element range '%s'", token);
 
     for (uint32_t value = bounds[0]; value <= bounds[1]; ++value) {
-        _cleanup_free_ void *range_elem = NULL;
+        _cleanup_free_ uint16_t *range_elem = NULL;
 
         range_elem = malloc(set->elem_size);
         if (!range_elem)
             return bf_err_r(-ENOMEM, "failed to allocate a new set element");
 
-        *(uint16_t *)range_elem = (uint16_t)value;
+        *range_elem = (uint16_t)value;
 
         r = bf_hashset_add(&set->elems, &range_elem);
-        if (r == -EEXIST)
-            continue;
-        if (r)
+        if (r && r != -EEXIST)
             return bf_err_r(r, "failed to insert element into set");
     }
 
